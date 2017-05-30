@@ -1,2 +1,2 @@
 # ZSTAR3
-Project of a ZSTAR3's board driver.
+This project concerns a driver for the ZSTAR3 sensor board manufactured by Freescale.
