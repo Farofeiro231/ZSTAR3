@@ -9,9 +9,10 @@ int port_device::init_fd(void)
 	*/
 	
 	fd = open(USBDEVICE, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd == -1){
+	if (fd == -1)
 		perror("Could not open device on port %s", USBDEVICE"!\n");
-	} else fcntl(fd, F_SETFL, 0);	//Retorna o estado de "bloqueio" e espera por dados do descritor
+	else 
+		fcntl(fd, F_SETFL, 0);	//Retorna o estado de "bloqueio" e espera por dados do descritor
 
 	return (fd);
 }
@@ -23,7 +24,6 @@ int port_device::config_fd(void)
 	/*
 	* Get the current options for the port...
  	*/
- 	
 	tcgetattr(fd, &options);
 
 	/*Configure input and output baudrates*/

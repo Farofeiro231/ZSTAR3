@@ -10,6 +10,6 @@ struct ZSTAR3{
 	Handshake_8b();
 	Set_Data_Rate(int rate);
 	Rxyz();
-}
+};
 
 #endif

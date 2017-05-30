@@ -21,6 +21,6 @@ struct port_device {
 	int config_fd();
 	int get_fd();
 	void close_fd();
-}
+};
 
 #endif

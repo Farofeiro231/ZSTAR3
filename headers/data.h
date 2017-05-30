@@ -4,18 +4,22 @@
 /*In the refference manual is said that if the board has
 ZSTAR3 protocol, the calibration values are not important */
 
-enum g{
-/*Criar conteúdos do enum*/
-}
+enum G {
+	G8,
+	G2,
+	G4
+};
 
-enum rate{
-/*Criar conteúdos do enum*/
-}
+enum RATE {
+	R120,
+	R64,
+	R32
+};
 
-struct data{
+struct data {
 	double Acc_x, Acc_y, Acc_z;
-	enum g gmode;
-	enum rate tx_rx_rate;
-}
+	enum G gmode;
+	enum RATE tx_rx_rate;
+};
 
 #endif

@@ -18,7 +18,7 @@ void ZSTAR3::Handshake_8b()
 void ZSTAR3::Set_Data_Rate(int rate)
 {
 	char* ZCOMMAND;
-	ZCOMMAND = malloc (2*sizeof(char));
+	ZCOMMAND = malloc (2 * sizeof(char));
 	ZCOMMAND[] = {0x4D, 0x31};
 	
 	switch(rate){
@@ -47,7 +47,7 @@ void ZSTAR3::Set_Data_Rate(int rate)
 ZSTAR3::Rxyz()
 {
 	char* buffer, ZCOMMAND;
-	ZCOMMAND = malloc ( sizeof(char) );
+	ZCOMMAND = malloc (sizeof(char));
 	buffer = malloc (6 * sizeof(char) );
 	ZCOMMAND[] = {0x56};
 
