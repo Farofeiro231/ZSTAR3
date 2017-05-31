@@ -4,12 +4,13 @@
 #include "driver.h"
 #include "data.h"
 
-struct ZSTAR3{
+struct ZSTAR3 {
 	struct port_device usbstick;
-	struct data parameters;
-	Handshake_8b();
-	Set_Data_Rate(int rate);
-	Rxyz();
+	struct data parameters;		//inicializar esse struct como zero;
 };
+
+void Rxyz(struct ZSTAR3 usb_dev);
+void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate);
+void Handshake_8b(struct ZSTAR3 usb_dev);
 
 #endif

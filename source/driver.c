@@ -1,30 +1,31 @@
 #include "driver.h"
 
-int port_device::init_fd(void)
+void init_fd(struct port_device usbstick)
 {
-	int fd; /*File descriptor para a porta serial*/
-	
 	/*
 	O_NOCTTY - O processo não quer ser o "controlador" para a porta. Caso contrário, ctrl + c poderia afetar o processo (p.e.)
 	*/
-	
-	fd = open(USBDEVICE, O_RDWR | O_NOCTTY | O_NDELAY);
-	if (fd == -1)
-		perror("Could not open device on port %s", USBDEVICE"!\n");
-	else 
-		fcntl(fd, F_SETFL, 0);	//Retorna o estado de "bloqueio" e espera por dados do descritor
-
-	return (fd);
+	usbstick.fd = open(USBDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (usbstick.fd == -1)
+		perror("Could not open device on port ACM0!\n");
+	else  {
+		fcntl(usbstick.fd, F_SETFL, FNDELAY);	//Retorna o estado de "bloqueio" e espera por dados do descritor
+		printf("Comunicacao iniciada com sucesso!\n");
+		config_fd(usbstick);
+	}
 }
 
-int port_device::config_fd(void)
+void config_fd(struct port_device usbstick)
 {
-	
+	printf("Valor de usbstick.fd: %d\n", usbstick.fd);
 	struct termios options;
 	/*
 	* Get the current options for the port...
  	*/
-	tcgetattr(fd, &options);
+
+	memset (&options, 0, sizeof(options));
+
+	tcgetattr(usbstick.fd, &options);
 
 	/*Configure input and output baudrates*/
 
@@ -36,23 +37,26 @@ int port_device::config_fd(void)
 	/*Configuring the flags for communication*/
 	/*Removing parity and stop bits, as well as setting 8 bits per byte and removing character size mask*/
 
-	options.c_cflag &= ~PARENB
-	options.c_cflag &= ~CSTOPB
+	options.c_cflag &= ~( PARENB | PARODD);
+	options.c_cflag &= ~CSTOPB;
 	options.c_cflag &= ~CSIZE;
 	options.c_cflag |= CS8;
-	options.c_cflag |= (CLOCAL | CREAD)	//Normal mode and enable receiving bytes
+	options.c_cflag |= (CLOCAL | CREAD);	//Normal mode and enable receiving bytes
 	options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG); 	//Allow program to read raw data input
 
-	tcsetattr(fd, TCSANOW, &options) 	//Change fd parameters without waiting to finish tx or rx.
-	return 0;
+	options.c_cc[VMIN]  = 0;            // read doesn't block
+        	options.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+
+        	tcflush(usbstick.fd, TCIFLUSH );
+	tcsetattr(usbstick.fd, TCSANOW, &options); 	//Change fd parameters without waiting to finish tx or rx.
 }
 
-int port_device::get_fd(void)
+int get_fd(struct port_device usbstick)
 {
-	return fd;
+	return usbstick.fd;
 }
 
-void port_device::close_fd(void)
+void close_fd(struct port_device usbstick)
 {
-	close(fd);
+	close(usbstick.fd);
 }

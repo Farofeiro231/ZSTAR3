@@ -1,7 +1,7 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include <iostream>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <termios.h> /* POSIX terminal control definitons*/
 
-#define USBDEVICE "/dev/ttyS0"
+#define USBDEVICE "/dev/ttyACM0"
 
 /*http://www.cmrr.umn.edu/~strupp/serial.html - Site para comunicações seriais*/
 
@@ -17,10 +17,11 @@
 
 struct port_device {
 	int fd;
-	int init_fd ();
-	int config_fd();
-	int get_fd();
-	void close_fd();
 };
+
+void init_fd(struct port_device usbstick);
+void config_fd(struct port_device usbstick);
+int get_fd(struct port_device usbstick);
+void close_fd(struct port_device usbstick);
 
 #endif
