@@ -9,19 +9,43 @@ void Handshake_8b(struct ZSTAR3 usb_dev)
 	int buffs = sizeof(char);
 	ZCOMMAND = malloc (buffs);
 	ZCOMMAND[0] = 0x52;
-	write(get_fd(usb_dev.usbstick), ZCOMMAND, buffs);
-	tcdrain(get_fd(usb_dev.usbstick));
+	write(get_fd(&usb_dev.usbstick), ZCOMMAND, buffs);
+	tcdrain(get_fd(&usb_dev.usbstick));
 	printf("Saindo da função Handshake_8b!\n");
 	free(ZCOMMAND);
 	ZCOMMAND = NULL;
 }
 
-void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate)
+void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 {
-	char *ZCOMMAND;
+	int fd = get_fd(&usb_dev->usbstick);
+	char *ZCOMMAND, *buffer;
+	ZCOMMAND = malloc (sizeof(char));
+	buffer = malloc (sizeof(char));
+	ZCOMMAND[0] = 'm';
+
+	write(fd, ZCOMMAND, sizeof(char));
+	tcdrain(fd);
+	read(fd, buffer, sizeof(char));
+
+	printf("data_rate: %s \n", buffer);
+	free(ZCOMMAND);
+	free(buffer);
+	buffer = NULL;
+	ZCOMMAND = NULL;
+
+}
+
+void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
+{
+	int fd = get_fd(&usb_dev->usbstick);
+	char *ZCOMMAND, *buffer;
+	buffer = malloc (2 * sizeof(char));
 	ZCOMMAND = malloc (2 * sizeof(char));
-	ZCOMMAND[0] = 0x4D;
+	ZCOMMAND[0] = 0x4D;		//M character to set new data rate
 	ZCOMMAND[1] = 0x32;
+
+
 
 	switch(rate) {
 		case(120):
@@ -30,6 +54,7 @@ void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate)
 
 		case(64):
 			ZCOMMAND[1]=0x31;
+			printf("Data rate selecionado: 64\n");
 		break;
 
 		case(32):
@@ -61,15 +86,25 @@ void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate)
 		break;
 	}
 
-	write(get_fd(usb_dev.usbstick), ZCOMMAND, sizeof(ZCOMMAND));
-	tcdrain(get_fd(usb_dev.usbstick));
+	printf("Valor de ZCOMMAND: %s  \n", ZCOMMAND);
+	write(fd, ZCOMMAND, 2 * sizeof(char));
+	tcdrain(fd);
+	read(fd, buffer, 2 * sizeof(char));
+	printf("Valor de buffer: %s \n", buffer);
 
 	free(ZCOMMAND);
+	free(buffer);
+	buffer = NULL;
 	ZCOMMAND = NULL;
+	//tcflush(fd, TCIOFLUSH);
+	usleep(31250);
+
 }
 
 void Rxyz(struct ZSTAR3 *usb_dev)
 {
+	int fd;
+	fd = get_fd(&usb_dev->usbstick);
 	printf("Entrei na função Rxyz!\n");
 	char *buffer, *ZCOMMAND;
 	ZCOMMAND = malloc (sizeof(char));
@@ -78,13 +113,10 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	
 	//printf("get_fd(usb_dev.usbstick):%d)\n", get_fd(usb_dev.usbstick));
 
-	write(get_fd(usb_dev->usbstick), ZCOMMAND, sizeof(char));
-	tcdrain(get_fd(usb_dev->usbstick));
-	//printf("Passei do tcdrain do envio!\n");
-	read(get_fd(usb_dev->usbstick), buffer, 6 * sizeof(char));
-	//printf("Passei da leitura!\n");
-	/*Terminar essa função!!!*/
-
+	write(fd, ZCOMMAND, sizeof(char));
+	tcdrain(fd);
+	read(fd, buffer, 6 * sizeof(char));
+	
 	usb_dev->parameters.Acc_x = (double) buffer[1] /22.0;
 	usb_dev->parameters.Acc_y = (double) buffer[3] /22.0;
 	usb_dev->parameters.Acc_z = (double) buffer[5] /22.0;

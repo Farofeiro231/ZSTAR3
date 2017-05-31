@@ -10,7 +10,8 @@ struct ZSTAR3 {
 };
 
 void Rxyz(struct ZSTAR3 *usb_dev);
-void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate);
+void Get_Data_Rate(struct ZSTAR3 *usb_dev);
+void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate);
 void Handshake_8b(struct ZSTAR3 usb_dev);
 
 #endif
