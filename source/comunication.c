@@ -26,6 +26,7 @@ void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 
 	write(fd, ZCOMMAND, sizeof(char));
 	tcdrain(fd);
+	usleep(31250);
 	read(fd, buffer, sizeof(char));
 
 	printf("data_rate: %s \n", buffer);
@@ -33,6 +34,7 @@ void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 	free(buffer);
 	buffer = NULL;
 	ZCOMMAND = NULL;
+	usleep(31250);
 
 }
 
@@ -44,8 +46,8 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
 	ZCOMMAND = malloc (2 * sizeof(char));
 	ZCOMMAND[0] = 0x4D;		//M character to set new data rate
 	ZCOMMAND[1] = 0x32;
-
-
+	buffer [0] = 0;
+	buffer [1] = 0;
 
 	switch(rate) {
 		case(120):
@@ -86,25 +88,28 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
 		break;
 	}
 
+
+	/* O buffer aqui está cheio de lixo. Tenho que limpá-lo antes */
 	printf("Valor de ZCOMMAND: %s  \n", ZCOMMAND);
 	write(fd, ZCOMMAND, 2 * sizeof(char));
+	printf("Valor de buffer_1:%s \n", buffer);
 	tcdrain(fd);
+	usleep(31250);
 	read(fd, buffer, 2 * sizeof(char));
-	printf("Valor de buffer: %s \n", buffer);
+	printf("Valor de buffer2: %s \n", buffer);
 
 	free(ZCOMMAND);
 	free(buffer);
+	//tcflush(fd, TCIOFLUSH);
 	buffer = NULL;
 	ZCOMMAND = NULL;
-	//tcflush(fd, TCIOFLUSH);
 	usleep(31250);
 
 }
 
 void Rxyz(struct ZSTAR3 *usb_dev)
 {
-	int fd;
-	fd = get_fd(&usb_dev->usbstick);
+	int fd = get_fd(&usb_dev->usbstick);
 	printf("Entrei na função Rxyz!\n");
 	char *buffer, *ZCOMMAND;
 	ZCOMMAND = malloc (sizeof(char));
@@ -129,6 +134,5 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	free(ZCOMMAND);
 	buffer = NULL;
 	ZCOMMAND = NULL;
-
 	usleep(31250);
 }

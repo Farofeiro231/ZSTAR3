@@ -5,11 +5,11 @@ void init_fd(struct port_device *usbstick)
 	/*
 	O_NOCTTY - O processo não quer ser o "controlador" para a porta. Caso contrário, ctrl + c poderia afetar o processo (p.e.)
 	*/
-	usbstick->fd = open(USBDEVICE, O_RDWR | O_NONBLOCK);
+	usbstick->fd = open(USBDEVICE, O_RDWR | O_NOCTTY | O_NONBLOCK);
 	if (usbstick->fd == -1)
 		perror("Could not open device on port ACM0!\n");
 	else  {
-		fcntl(usbstick->fd, F_SETFL, 0);	//Retorna o estado de "bloqueio" e espera por dados do descritor
+		fcntl(usbstick->fd, F_SETFL, O_NONBLOCK);	//Retorna o estado de "bloqueio" e espera por dados do descritor
 		printf("Comunicacao iniciada com sucesso!\n");
 		config_fd(usbstick);
 	}
@@ -31,13 +31,13 @@ void config_fd(struct port_device *usbstick)
 
 	/*Não sei ainda quantos bytes são enviados/recebidos*/
 
-	cfsetispeed(&options, B19200);
-	cfsetospeed(&options, B19200);
+	cfsetispeed(&options, B9600);
+	cfsetospeed(&options, B9600);
 
 	/*Configuring the flags for communication*/
 	/*Removing parity and stop bits, as well as setting 8 bits per byte and removing character size mask*/
 
-	options.c_cflag = B19200;
+	options.c_cflag = B9600;
 	options.c_oflag = 0;
 	options.c_lflag = 0;
 	options.c_iflag = IGNPAR | IGNBRK;
