@@ -19,8 +19,8 @@ struct port_device {
 	int fd;
 };
 
-void init_fd(struct port_device usbstick);
-void config_fd(struct port_device usbstick);
+void init_fd(struct port_device *usbstick);
+void config_fd(struct port_device *usbstick);
 int get_fd(struct port_device usbstick);
 void close_fd(struct port_device usbstick);
 

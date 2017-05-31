@@ -9,7 +9,7 @@ struct ZSTAR3 {
 	struct data parameters;		//inicializar esse struct como zero;
 };
 
-void Rxyz(struct ZSTAR3 usb_dev);
+void Rxyz(struct ZSTAR3 *usb_dev);
 void Set_Data_Rate(struct ZSTAR3 usb_dev, int rate);
 void Handshake_8b(struct ZSTAR3 usb_dev);
 
