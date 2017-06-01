@@ -1,5 +1,11 @@
 #include "driver.h"
 
+void init_buffer(char *buffer)
+{
+	for (int i = 0; i < 1024; i++)
+		buffer[i] = 0;
+}
+
 void init_fd(struct port_device *usbstick)
 {
 	/*
@@ -9,7 +15,7 @@ void init_fd(struct port_device *usbstick)
 	if (usbstick->fd == -1)
 		perror("Could not open device on port ACM0!\n");
 	else  {
-		fcntl(usbstick->fd, F_SETFL, O_NONBLOCK);	//Retorna o estado de "bloqueio" e espera por dados do descritor
+		fcntl(usbstick->fd, F_SETFL, 0);	//Retorna o estado de "bloqueio" e espera por dados do descritor
 		printf("Comunicacao iniciada com sucesso!\n");
 		config_fd(usbstick);
 	}
@@ -18,6 +24,7 @@ void init_fd(struct port_device *usbstick)
 void config_fd(struct port_device *usbstick)
 {
 	printf("Valor de usbstick.fd: %d\n", usbstick->fd);
+	
 	struct termios options;
 	/*
 	* Get the current options for the port...
@@ -51,8 +58,8 @@ void config_fd(struct port_device *usbstick)
 	options.c_oflag &= ~OPOST; // Raw output is selected by resetting the OPOST option in the c_oflag member:
 
 
-	options.c_cc[VMIN]  = 0;            // read doesn't block
-        	options.c_cc[VTIME] = 5;            // 0.5 seconds read timeout
+	options.c_cc[VMIN]  = 1;            // read doesn't block
+        	options.c_cc[VTIME] = 0;            // 0.5 seconds read timeout
 	options.c_iflag &= ~(IXON | IXOFF);
 
 

@@ -8,8 +8,10 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <termios.h> /* POSIX terminal control definitons*/
+#include <sys/time.h>
 
 #define USBDEVICE "/dev/ttyACM0"
+#define BUFFSIZE 1024
 
 /*http://www.cmrr.umn.edu/~strupp/serial.html - Site para comunicações seriais*/
 
@@ -23,5 +25,6 @@ void init_fd(struct port_device *usbstick);
 void config_fd(struct port_device *usbstick);
 int get_fd(struct port_device *usbstick);
 void close_fd(struct port_device *usbstick);
+void init_buffer(char *buffer);
 
 #endif
