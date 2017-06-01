@@ -15,6 +15,6 @@ void Change_Focus(struct ZSTAR3 *usb_dev);
 void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate);
 void Handshake_8b(struct ZSTAR3 *usb_dev);
 void Read_register(struct ZSTAR3 *usb_dev);
-void Send_Command(int *fd, char *ZCOMMAND, char *buffer);
+void Send_Command(int *fd, char *ZCOMMAND, char *buffer, int length);
 
 #endif

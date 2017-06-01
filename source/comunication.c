@@ -46,7 +46,6 @@ void Change_Focus(struct ZSTAR3 *usb_dev)
 void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 {
 	int fd = get_fd(&usb_dev->usbstick);
-	int count = 0;
 	char *ZCOMMAND, *buffer;
 	ZCOMMAND = malloc (sizeof(char));
 	buffer = malloc (BUFFSIZE * sizeof(char));
@@ -54,18 +53,13 @@ void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 
 	ZCOMMAND[0] = 'm';
 
-	tcflush(fd, TCIOFLUSH);
-	write(fd, ZCOMMAND, sizeof(char));
-	tcdrain(fd);
-	count = read(fd, buffer, BUFFSIZE * sizeof(char));
-
-	printf("Valor de count: %d \n", count);
-	printf("data_rate: %s \n", buffer);
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 1);
+	printf("Data rate lido: %s \n", buffer);
 	free(ZCOMMAND);
 	free(buffer);
 	buffer = NULL;
 	ZCOMMAND = NULL;
-
+	usleep(31250);
 }
 
 
@@ -85,27 +79,26 @@ void Read_register(struct ZSTAR3 *usb_dev)
 	ZCOMMAND[1] = reg_addr;
 	ZCOMMAND[2] = '1';
 
-	Send_Command(&fd, &(*ZCOMMAND), &(*buffer));
-	
-	read(fd, extended, BUFFSIZE * sizeof(char));
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 3);
+	printf("Numero de bytes lidos de extended: %ld \n", read(fd, extended, BUFFSIZE * sizeof(char)));
 
 	printf("Valor recebido: %s \n", buffer);
 	printf("Valor extendido: %s \n", extended);
 	usleep(31250);
 }
 
-void Send_Command(int *fd, char *ZCOMMAND, char *buffer)
+void Send_Command(int *fd, char *ZCOMMAND, char *buffer, int length)
 {
 	int FD = *fd;
 	int count, i, recebido = 0;
-	tcflush(FD, TCOFLUSH);
-	write(FD, ZCOMMAND, 3 * sizeof(char));
+	tcflush(FD, TCIOFLUSH);
+	write(FD, ZCOMMAND, length * sizeof(char));
 	tcdrain(FD);
 	
 	while (recebido == 0) {
 		
 		count = read(FD, buffer, BUFFSIZE * sizeof(char));
-		printf("Valor de count do while: %d \n", count);
+		printf("Numero de bytes lidos de buffer: %d \n", count);
 		i++;
 		
 		if (count != 0) {
@@ -113,7 +106,7 @@ void Send_Command(int *fd, char *ZCOMMAND, char *buffer)
 		}
 
 		if (count == 0 && i == 2) {
-			write(FD, ZCOMMAND, 3 * sizeof(char));
+			write(FD, ZCOMMAND, length * sizeof(char));
 			tcdrain(FD);
 			i = 0;
 		}
@@ -170,15 +163,8 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
 		break;
 	}
 
-
-	/* O buffer aqui está cheio de lixo. Tenho que limpá-lo antes */
-	//printf("Buffer antes de enviar o ZCOMMAND: %s \n", buffer);
-	//printf("Valor de ZCOMMAND: %s  \n", ZCOMMAND);
-	write(fd, ZCOMMAND, 2 * sizeof(char));
-	tcdrain(fd);
-	//printf("Valor de buffer2: %s \n", buffer);
-	read(fd, buffer, BUFFSIZE * sizeof(char));
-	printf("Buffer lido %s \n",buffer);
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 2);
+	printf("Buffer lido: %s \n",buffer);
 
 	free(ZCOMMAND);
 	free(buffer);
@@ -186,7 +172,6 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
 	buffer = NULL;
 	ZCOMMAND = NULL;
 	usleep(31250);
-
 }
 
 void Rxyz(struct ZSTAR3 *usb_dev)
@@ -197,14 +182,12 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	printf("Entrei na função Rxyz!\n");
 	char *buffer, *ZCOMMAND;
 	ZCOMMAND = malloc (sizeof(char));
-	buffer = malloc (6 * sizeof(char) );
+	buffer = malloc (BUFFSIZE * sizeof(char) );
 	ZCOMMAND[0] = 0x56;
 	
 	//printf("get_fd(usb_dev.usbstick):%d)\n", get_fd(usb_dev.usbstick));
 	gettimeofday(&t1, NULL);
-	write(fd, ZCOMMAND, sizeof(char));
-	tcdrain(fd);
-	read(fd, buffer, 6 * sizeof(char));
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 1);
 	gettimeofday(&t2, NULL);
 	delta_t = t2.tv_usec - t1.tv_usec;	
 
