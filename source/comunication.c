@@ -85,7 +85,6 @@ void Read_register(struct ZSTAR3 *usb_dev)
 	ZCOMMAND[1] = reg_addr;
 	ZCOMMAND[2] = '1';
 
-	printf("Comando: %d \n", ZCOMMAND[1]);
 	Send_Command(&fd, &(*ZCOMMAND), &(*buffer));
 	
 	read(fd, extended, BUFFSIZE * sizeof(char));
@@ -213,9 +212,9 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	* e a recepção / leitura dos dados */
 	printf("Tempo tx/rx: %f \n", delta_t);
 
-	usb_dev->parameters.Acc_x = (double) buffer[1] /22.0;
-	usb_dev->parameters.Acc_y = (double) buffer[3] /22.0;
-	usb_dev->parameters.Acc_z = (double) buffer[5] /22.0;
+	usb_dev->parameters.Acc_x = (double) buffer[1] /21.33;
+	usb_dev->parameters.Acc_y = (double) buffer[3] /21.33;
+	usb_dev->parameters.Acc_z = (double) buffer[5] /21.33;
 
 	printf("Valor de aceleracao em x: %f \n", usb_dev->parameters.Acc_x);
 	printf("Valor de aceleracao em y: %f \n", usb_dev->parameters.Acc_y);
