@@ -16,5 +16,7 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate);
 void Handshake_8b(struct ZSTAR3 *usb_dev);
 void Read_register(struct ZSTAR3 *usb_dev);
 void Send_Command(int *fd, char *ZCOMMAND, char *buffer, int length);
-
+void Set_NetNum(struct ZSTAR3 *usb_dev);
+void Issue_Command(struct ZSTAR3 *usb_dev);
+int Asynchronous_read(int *fd, char *buffer);
 #endif

@@ -58,8 +58,8 @@ void config_fd(struct port_device *usbstick)
 	options.c_oflag &= ~OPOST; // Raw output is selected by resetting the OPOST option in the c_oflag member:
 
 
-	options.c_cc[VMIN]  = 1;            // read doesn't block
-        	options.c_cc[VTIME] = 0;            // 0.5 seconds read timeout
+	options.c_cc[VMIN]  = 0;            // Waits for at least 0 bytes
+        	options.c_cc[VTIME] = 10;            // x/10 seconds read timeout (25.5 max)
 	options.c_iflag &= ~(IXON | IXOFF);
 
 

@@ -24,19 +24,15 @@ void Change_Focus(struct ZSTAR3 *usb_dev)
 	char *ZCOMMAND, *buffer;
 	ZCOMMAND = malloc (2 * sizeof(char));
 	buffer = malloc (BUFFSIZE * sizeof(char));
+	init_buffer(&(*buffer));
 
-	for (int i = 0; i < BUFFSIZE; i++) 
-		buffer[i]=0;
 
 	//printf("BUFFER: %s \n", buffer);
 	ZCOMMAND[0] = 'N';
 	ZCOMMAND[1] = '0';
 
-	write(fd, ZCOMMAND, 2 * sizeof(char));
-	tcdrain(fd);
-	read(fd, buffer, BUFFSIZE * sizeof(char));
-
-	printf("Index selecionado: %s \n", buffer);
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 2);
+	printf("Valor lido do buffer: %s \n", buffer);
 	free(ZCOMMAND);
 	free(buffer);
 	buffer = NULL;
@@ -54,6 +50,28 @@ void Get_Data_Rate(struct ZSTAR3 *usb_dev)
 	ZCOMMAND[0] = 'm';
 
 	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 1);
+	printf("Data rate lido: %s \n", buffer);
+	free(ZCOMMAND);
+	free(buffer);
+	buffer = NULL;
+	ZCOMMAND = NULL;
+	usleep(31250);
+}
+
+/* Não usar essa função */
+void Set_NetNum(struct ZSTAR3 *usb_dev)
+{
+	int fd = get_fd(&usb_dev->usbstick);
+	char *ZCOMMAND, *buffer;
+	ZCOMMAND = malloc (3 * sizeof(char));
+	buffer = malloc (BUFFSIZE * sizeof(char));
+	init_buffer(&(*buffer));
+
+	ZCOMMAND[0] = 'h';
+	ZCOMMAND[1] = 'U';
+	ZCOMMAND[2] = 'm';
+
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), 3);
 	printf("Data rate lido: %s \n", buffer);
 	free(ZCOMMAND);
 	free(buffer);
@@ -84,7 +102,58 @@ void Read_register(struct ZSTAR3 *usb_dev)
 
 	printf("Valor recebido: %s \n", buffer);
 	printf("Valor extendido: %s \n", extended);
+
+	free(ZCOMMAND);
+	free(buffer);
+	ZCOMMAND = NULL;
+	buffer = NULL;
 	usleep(31250);
+}
+
+void Issue_Command(struct ZSTAR3 *usb_dev)
+{
+	int command_length;
+	int fd = get_fd (&usb_dev->usbstick);
+	char *ZCOMMAND, *buffer;
+	buffer = malloc (BUFFSIZE * sizeof(char));
+	init_buffer(&(*buffer));
+
+	printf("Digite o tamanho em bytes do comando desejado: ");
+	scanf("%d", &command_length);
+	ZCOMMAND = malloc (command_length * sizeof(char));
+	printf("Digite os caracteres do comando, um seguido do outro (sem enter), sem espaçamento: ");
+	scanf("%s", ZCOMMAND);
+
+	Send_Command(&fd, &(*ZCOMMAND), &(*buffer), command_length);
+	
+	printf("Valor armazenado em buffer: %s \n", buffer);
+
+	Asynchronous_read(&fd, &(*buffer));
+
+	free(ZCOMMAND);
+	free(buffer);
+	ZCOMMAND = NULL;
+	buffer = NULL;
+}
+
+int Asynchronous_read(int *fd, char *buffer)
+{	
+	//init_buffer(&(*buffer));
+	int FD = *fd;
+	int flag = 0;
+	//tcflush(FD, TCIOFLUSH);
+	do {
+		flag = read(FD, buffer, BUFFSIZE * sizeof(char));
+		if (flag != 0) {
+		printf("Numero de bytes lidos de buffer: %d \n", flag);
+		printf("Valor armazenado em buffer: %s \n", buffer);
+		}
+	} while(flag != 0);
+
+	if (flag <= 0)
+		return 0;
+	else
+		return 1;
 }
 
 void Send_Command(int *fd, char *ZCOMMAND, char *buffer, int length)
@@ -168,7 +237,6 @@ void Set_Data_Rate(struct ZSTAR3 *usb_dev, int rate)
 
 	free(ZCOMMAND);
 	free(buffer);
-	//tcflush(fd, TCIOFLUSH);
 	buffer = NULL;
 	ZCOMMAND = NULL;
 	usleep(31250);
@@ -183,6 +251,7 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	char *buffer, *ZCOMMAND;
 	ZCOMMAND = malloc (sizeof(char));
 	buffer = malloc (BUFFSIZE * sizeof(char) );
+	init_buffer(&(*buffer));
 	ZCOMMAND[0] = 0x56;
 	
 	//printf("get_fd(usb_dev.usbstick):%d)\n", get_fd(usb_dev.usbstick));
@@ -199,10 +268,22 @@ void Rxyz(struct ZSTAR3 *usb_dev)
 	usb_dev->parameters.Acc_y = (double) buffer[3] /21.33;
 	usb_dev->parameters.Acc_z = (double) buffer[5] /21.33;
 
-	printf("Valor de aceleracao em x: %f \n", usb_dev->parameters.Acc_x);
-	printf("Valor de aceleracao em y: %f \n", usb_dev->parameters.Acc_y);
-	printf("Valor de aceleracao em z: %f \n", usb_dev->parameters.Acc_z);
+	printf("Valor de aceleracao em x[0]: %f \n", usb_dev->parameters.Acc_x);
+	printf("Valor de aceleracao em y[0]: %f \n", usb_dev->parameters.Acc_y);
+	printf("Valor de aceleracao em z[0]: %f \n", usb_dev->parameters.Acc_z);
 	
+	if (Asynchronous_read(&fd, &(*buffer))) {
+
+	usb_dev->parameters.Acc_x = (double) buffer[1] /21.33;
+	usb_dev->parameters.Acc_y = (double) buffer[3] /21.33;
+	usb_dev->parameters.Acc_z = (double) buffer[5] /21.33;
+
+	printf("Valor de aceleracao em x[1]: %f \n", usb_dev->parameters.Acc_x);
+	printf("Valor de aceleracao em y[1]: %f \n", usb_dev->parameters.Acc_y);
+	printf("Valor de aceleracao em z[1]: %f \n", usb_dev->parameters.Acc_z);
+	
+	}
+
 	free(buffer);
 	free(ZCOMMAND);
 	buffer = NULL;
